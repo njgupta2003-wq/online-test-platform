@@ -1,5 +1,6 @@
 package com.testplatform.backend.service;
 
+import com.testplatform.backend.dto.AuthResponse;
 import com.testplatform.backend.dto.LoginRequest;
 import com.testplatform.backend.dto.RegisterRequest;
 import com.testplatform.backend.dto.UserResponse;
@@ -8,6 +9,7 @@ import com.testplatform.backend.entity.User;
 import com.testplatform.backend.exception.EmailAlreadyExistsException;
 import com.testplatform.backend.exception.InvalidCredentialsException;
 import com.testplatform.backend.repository.UserRepository;
+import com.testplatform.backend.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,9 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
+
 
     public UserResponse register(RegisterRequest req) {
         if (req.role() == Role.ADMIN) {
@@ -36,14 +41,15 @@ public class AuthService {
         return toResponse(userRepository.save(user));
     }
 
-    public UserResponse login(LoginRequest req) {
+    public AuthResponse login(LoginRequest req) {
         User user = userRepository.findByEmail(req.email())
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
 
         if (!passwordEncoder.matches(req.password(), user.getPasswordHash())) {
             throw new InvalidCredentialsException("Invalid email or password");
         }
-        return toResponse(user);
+        String token = jwtService.generateToken(user);
+        return new AuthResponse(token, "Bearer", toResponse(user));
     }
 
     private UserResponse toResponse(User u) {

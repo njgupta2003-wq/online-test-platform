@@ -1,5 +1,6 @@
 package com.testplatform.backend.controller;
 
+import com.testplatform.backend.dto.AuthResponse;
 import com.testplatform.backend.dto.LoginRequest;
 import com.testplatform.backend.dto.RegisterRequest;
 import com.testplatform.backend.dto.UserResponse;
@@ -7,6 +8,7 @@ import com.testplatform.backend.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,7 +25,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public UserResponse login(@Valid @RequestBody LoginRequest request) {
-        return authService.login(request);
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 }
